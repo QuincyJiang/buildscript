@@ -1,4 +1,4 @@
-import sys
+# encoding: utf-8
 import getopt
 import json
 import os
@@ -8,12 +8,9 @@ import time
 import shutil
 import datetime
 import glob
-print(" ========================================== ")
-print(" ==                                      == ")
-print(" ==       BuildScript  Version 1.0       == ")
-print(" ==           Run -h for help            == ")
-print(" ==                                      == ")
-print(" ========================================== ")
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 HELP = "-h"
 EMMC = "-e"
 OUT = "-o"
@@ -32,20 +29,29 @@ RAW_PROGRAM = "rawprogram0.xml"
 DATA = dict(emmcPath="", outdir="", targetPath="")
 
 
+def print_version():
+    print(" ========================================== ")
+    print(" ==                                      == ")
+    print(" ==       BuildScript  Version 1.0       == ")
+    print(" ==           Run -h for help            == ")
+    print(" ==                                      == ")
+    print(" ========================================== ")
+
+
 def print_help():
-    print("执行脚本文件可直接传参 也可随后在命令行中根据提示输入\n"
-          "buildScript.py -[h] 显示帮助文本\n"
-          "buildScript.py -[i] 直接执行打包脚本（默认使用上次输入过的路径）\n"
-          "buildScript.py -[c] 清空上次输入路径以及产品名\n"
-          "buildScript.py -[E] <new_emmc_path> 替换已有的emmc目录 \n"
-          "buildScript.py -[O] <new_out_path> 替换已有的out目录 \n"
-          "buildScript.py -[T] <new_target_path> 替换已有的target目录 \n"
-          "命令行传入参数请参考如下格式："
-          "buildScript.py (-e <emmcPath> -o <outDirPath> -t <target>\n"
-          "比如：\n"
-          "buildScript.py -e /data/jiangxq/msm8909_emmc_img  emmc文件夹路径 \n "
-          "-o /data/jiangxq/repo/msm8909/v101/out/target/product/TOS_IP out目录 \n"
-          "-t /data/jiangxq/release 打包结果存放目录\n")
+    print(u"执行脚本文件可直接传参 也可随后在命令行中根据提示输入\n"+
+          u"buildScript.py -[h] 显示帮助文本\n"
+          u"buildScript.py -[i] 直接执行打包脚本（默认使用上次输入过的路径）\n"
+          u"buildScript.py -[c] 清空上次输入路径以及产品名\n"
+          u"buildScript.py -[E] <new_emmc_path> 替换已有的emmc目录 \n"
+          u"buildScript.py -[O] <new_out_path> 替换已有的out目录 \n"
+          u"buildScript.py -[T] <new_target_path> 替换已有的target目录 \n"
+          u"命令行传入参数请参考如下格式："
+          u"buildScript.py (-e <emmcPath> -o <outDirPath> -t <target>\n"
+          u"比如：\n"
+          u"buildScript.py -e /data/jiangxq/msm8909_emmc_img  emmc文件夹路径 \n "
+          u"-o /data/jiangxq/repo/msm8909/v101/out/target/product/TOS_IP out目录 \n"
+          u"-t /data/jiangxq/release 打包结果存放目录\n")
 
 
 def save_data(bean):
@@ -69,11 +75,14 @@ def read_file():
         with open(PATH_FILE_NAME)as pathFile:
             bean = json.load(pathFile)
             return bean
-    except FileNotFoundError:
+    except IOError:
         return None
 
 
 def remove_hypen_and_adjust_path(path):
+    if path == "":
+        return ""
+    pass
     # 清除空格，同时格式化路径
     format = "".join(path.split(' '))
     if format[0] != "/":
@@ -103,6 +112,7 @@ def getprop(argv):
             return None
         elif opt in (CLEAN_PATH, "--clean"):
             clean_data()
+            print u"数据已清空\n"
             return None
         elif opt in (EMMC, "--emmcPath"):
             emmcPath = remove_hypen_and_adjust_path(arg[0])
@@ -111,15 +121,15 @@ def getprop(argv):
         elif opt in (TARGET_DIR_PATH, "--target"):
             targetPath = remove_hypen_and_adjust_path(arg[0])
         elif opt in(REPLACE_EMMC, "--replaceEmmc"):
-            new_emmc = input("请输入新的emmc文件路径：\n")
+            new_emmc = raw_input(u"请输入新的emmc文件路径：\n")
             do_replace("emmcPath", new_emmc)
             return None
         elif opt in(REPLACE_OUT, "--replaceOut"):
-            new_out = input("请输入新的out文件路径：\n")
+            new_out = raw_input(u"请输入新的out文件路径：\n")
             do_replace("outdir", new_out)
             return None
         elif opt in(REPLACE_TARGET, "--replaceTarget"):
-            new_target = input("请输入新的打包结果存放路径：\n")
+            new_target = raw_input(u"请输入新的打包结果存放路径：\n")
             do_replace("targetPath", new_target)
             return None
     return dict(emmcPath=emmcPath, outdir=outdir, targetPath=targetPath)
@@ -128,8 +138,8 @@ def getprop(argv):
 def check_file_is_exist(files):
     for i in files:
         if not os.path.exists(i):
-            print("缺少必要文件："+i)
-            if input("按q退出程序，按其他任意键继续\n") == "q":
+            print(u"缺少必要文件："+i)
+            if raw_input(u"按q退出程序，按其他任意键继续\n") == "q":
                 sys.exit(0)
             else:
                 check_file_is_exist(files)
@@ -137,36 +147,50 @@ def check_file_is_exist(files):
 
 def retry_or_not(exit_code, tgz_file_name, TEMP_PATH):
     if exit_code != 0:
-        if input("压缩文件出错，按q键终止程序，按其他任意键重试\n") != "q":
+        if raw_input(u"压缩文件出错，按q键终止程序，按其他任意键重试\n") != "q":
             retry_or_not(os.system("tar -czPf "+tgz_file_name+" -C "+TEMP_PATH), tgz_file_name, TEMP_PATH)
         else:
             sys.exit(0)
     else:
-        print("===========压缩包打包完成============")
+        print(u"===========压缩包打包完成============")
         pass
 
 
 def check_out_dir(out_dir_path):
-    path = out_dir_path
-    if path == "":
-        path = input("请输入out目录路径，以回车结束，q退出：\n")
-        if path == "q":
-            sys.exit(2)
-        else:
-            path = remove_hypen_and_adjust_path(path)
+    path = remove_hypen_and_adjust_path(out_dir_path)
+    if os.path.exists(path):
+        try:
+            product_name = path.split("/target/product/")[1]
+            return path
+        except IndexError:
+            out_path2 = raw_input(u"输入的out路径非法，必须精确到最后一个目录级别 /out/target/product/TOP_IP\n"
+                          u"当前保存的out路径为： "+path + u"\n"
+                          u"请重新输入，退出按q\n")
+            if out_path2 == "q":
+                sys.exit(0)
+            else:
+                return check_out_dir(out_path2)
     else:
-        path = remove_hypen_and_adjust_path(path)
-    try:
-        product_name = path.split("/target/product/")[1]
-        return path
-    except IndexError:
-        out_path2 = input("输入的out路径非法，必须精确到最后一个目录级别 /out/target/product/TOP_IP\n"
-                          "当前保存的out路径为： "+path + "\n"
-                          "请重新输入out目录，退出按q\n")
-        if out_path2 == "q":
+        out_path3 = raw_input(u"out目录不存在\n"
+                              u"当前保存的out路径为："+path+u"\n"
+                              u"请重新输入，退出按q\n")
+        if out_path3 == 'q':
             sys.exit(0)
         else:
-            return check_out_dir(out_path2)
+            return check_out_dir(out_path3)
+
+def check_emmc(emmc_path):
+    path = remove_hypen_and_adjust_path(emmc_path)
+    if os.path.exists(path):
+        return path
+    else:
+        emmc_path2 = raw_input(u"输入的emmc路径不存在\n"
+                               u"当前输入的emmc路径为： " + path + "\n"+
+                               u"请重新输入emmc目录，退出按q\n")
+        if emmc_path2 == "q":
+            sys.exit(0)
+        else:
+            return check_emmc(emmc_path2)
 
 
 def do_replace(key, value):
@@ -203,27 +227,27 @@ def do_copy(data):
     sbl1 = emmcPath + "/sbl1.mbn"
 
     if os.path.exists(release_dir):
-        if input("发布路径已被创建，是否覆盖？Y/N\n") == "N":
-            print("打包已终止")
+        if raw_input(u"发布路径已被创建，是否覆盖？Y/N\n") == "N":
+            print(u"打包已终止")
             sys.exit(0)
     try:
         shutil.rmtree(release_dir)
-    except FileNotFoundError:
+    except OSError:
         pass
     os.makedirs(TEMP_PATH)
     os.makedirs(release_dir)
     print("=========checking sparse==========")
-    return_code = os.system("python3 checksparse.py -i %s -s %s -s %s -o %s -t %s" % (emmcPath+"/"+RAW_PROGRAM, outdir, emmcPath, TEMP_PATH+"/rawprogram_unsparse.xml", TEMP_PATH))
+    return_code = os.system("python checksparse.py -i %s -s %s -s %s -o %s -t %s" % (emmcPath+"/"+RAW_PROGRAM, outdir, emmcPath, TEMP_PATH+"/rawprogram_unsparse.xml", TEMP_PATH))
     # 返回码为空 中断执行
     if return_code != 0:
         sys.exit(0)
     try:
         os.remove(RAW_PROGRAM+".bak")
     except OSError:
-        print("未找到文件\n")
+        print(u"未找到文件\n")
         return
     # 非sparse镜像
-    print("==========拷贝必要镜像文件===========")
+    print(u"==========拷贝必要镜像文件===========")
     files_need_to_copy = [appsboot, boot, recover, emmc_firehose, patch0, gpt_backup0, gpt_main0, sbl1]
     check_file_is_exist(files_need_to_copy)
     shutil.copy(appsboot, TEMP_PATH)
@@ -242,17 +266,17 @@ def do_copy(data):
                 os.remove(file)
             except OSError:
                 pass
-    print("============压缩镜像文件=============")
+    print(u"============压缩镜像文件=============")
     # 压缩镜像目录
     tgz_code = os.system("tar -czPf "+tgz_file_name+" -C "+TEMP_PATH+" .")
     retry_or_not(tgz_code, tgz_file_name, TEMP_PATH)
     # shutil.make_archive(tgz_file_name, "tar", root_dir=TEMP_PATH)
     # 拷贝ota升级包
-    print("===========拷贝ota升级包=============")
+    print(u"===========拷贝ota升级包=============")
     for ota_file in glob.glob(os.path.join(outdir, product_name+'-ota-eng.*.zip')):
         shutil.copyfile(ota_file, release_dir + "/" + ota_file_name)
-    print("=============拷贝完成================")
-    print("===========镜像打包完成===============")
+    print(u"=============拷贝完成================")
+    print(u"===========镜像打包完成===============")
     # 删除temp目录
     try:
         os.remove(TEMP_PATH)
@@ -261,8 +285,10 @@ def do_copy(data):
     return
 try:
     shutil.rmtree("tmp")
-except FileNotFoundError:
+except OSError:
     pass
+
+print_version()
 DATA = getprop(sys.argv[1:])
 if DATA is not None:
     # DATA 不为空 表示命令行输入的有参数 读取该参数并持久到本地
@@ -277,15 +303,11 @@ else:
 if DATA is None:
     DATA = dict(emmcPath="", outdir="", targetPath="")
 
-if DATA.get("emmcPath", "") == "":
-    emmc= input("请输入emmc镜像文件路径，以回车结束，q退出：\n")
-    if emmc == "q":
-        sys.exit(2)
-    else:
-        DATA["emmcPath"] = remove_hypen_and_adjust_path(emmc)
-        print("emmcPath：" + DATA.get("emmcPath", ""))
-        clean_data()
-        save_data(DATA)
+emmc= check_emmc(DATA.get("emmcPath", ""))
+DATA["emmcPath"] = remove_hypen_and_adjust_path(emmc)
+print("emmcPath：" + DATA.get("emmcPath", ""))
+clean_data()
+save_data(DATA)
 
 out_dir = check_out_dir(DATA.get("outdir", ""))
 DATA["outdir"] = remove_hypen_and_adjust_path(out_dir)
@@ -293,7 +315,7 @@ print("outdir: "+DATA.get("outdir", ""))
 clean_data()
 save_data(DATA)
 if DATA.get("targetPath", "") == "":
-    target = input("请输入打包镜像要存放的目录，以回车结束，q退出：\n")
+    target = raw_input(u"请输入打包镜像要存放的目录，以回车结束，q退出：\n")
     if target == "q":
         sys.exit(2)
     else:

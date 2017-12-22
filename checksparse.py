@@ -35,7 +35,7 @@ import struct
 
 if sys.version_info < (2,5): 
     sys.stdout.write("\n\nERROR: This script needs Python version 2.5 or greater, detected as ")
-    print(sys.version_info)
+    print sys.version_info
     sys.exit()  # error
 
 from xml.etree import ElementTree as ET
@@ -83,20 +83,20 @@ SPARSE_HEADER_LEN = sparse_header_t.size
 CHUNK_HEADER_LEN = chunk_header_t.size
 
 def PrintBigError(sz):
-    print("\t _________________ ___________ ")
-    print("\t|  ___| ___ \\ ___ \\  _  | ___ \\")
-    print("\t| |__ | |_/ / |_/ / | | | |_/ /")
-    print("\t|  __||    /|    /| | | |    / ")
-    print("\t| |___| |\\ \\| |\\ \\\\ \\_/ / |\\ \\ ")
-    print("\t\\____/\\_| \\_\\_| \\_|\\___/\\_| \\_|\n")
+    print"\t _________________ ___________ "
+    print"\t|  ___| ___ \\ ___ \\  _  | ___ \\"
+    print"\t| |__ | |_/ / |_/ / | | | |_/ /"
+    print"\t|  __||    /|    /| | | |    / "
+    print"\t| |___| |\\ \\| |\\ \\\\ \\_/ / |\\ \\ "
+    print"\t\\____/\\_| \\_\\_| \\_|\\___/\\_| \\_|\n"
 
     if len(sz)>0:
-        print(sz)
-        print("\nchecksparse.py exiting")
+        print sz
+        print"\nchecksparse.py exiting"
         sys.exit(1)
 
 def usage():
-    print("""
+    print """
 Usage: python simg2img.py [OPTION...]
 Parses the sparse images from the input xml and generates the output chunks
 as well as the new xml.
@@ -117,23 +117,23 @@ Examples:
   python checksparse.py -i rawprogram0.xml -s C:\path1 -s C:\path2 -s C:\path3
   python checksparse.py -i rawprogram0.xml -s C:\path1 -s C:\path2 -o rawprogram00.xml
 
-    """)
+    """
 
 def PrintBigError(sz):
-    print("\t _________________ ___________ ")
-    print("\t|  ___| ___ \\ ___ \\  _  | ___ \\")
-    print("\t| |__ | |_/ / |_/ / | | | |_/ /")
-    print("\t|  __||    /|    /| | | |    / ")
-    print("\t| |___| |\\ \\| |\\ \\\\ \\_/ / |\\ \\ ")
-    print("\t\\____/\\_| \\_\\_| \\_|\\___/\\_| \\_|\n")
+    print "\t _________________ ___________ "
+    print "\t|  ___| ___ \\ ___ \\  _  | ___ \\"
+    print "\t| |__ | |_/ / |_/ / | | | |_/ /"
+    print "\t|  __||    /|    /| | | |    / "
+    print "\t| |___| |\\ \\| |\\ \\\\ \\_/ / |\\ \\ "
+    print "\t\\____/\\_| \\_\\_| \\_|\\___/\\_| \\_|\n"
 
     if len(sz)>0:
-        print(sz)
+        print sz
         sys.exit(1)
 
 
 def process_raw_chunk(fp_in, fp_out, blocks, blk_sz): 
-    length = (1 * blocks) * blk_sz
+    length = (1L * blocks) * blk_sz
     chunk = None
 
     while length!=0:
@@ -166,14 +166,14 @@ def main():
         sys.exit(-1)
     try:
         opts, args = getopt.getopt(sys.argv[1:], "i:o:?s:t:x:", ["input=", "outputpath=", "help", "search_path=", "location=", "xmlout="])
-    except getopt.GetoptError as err:
+    except getopt.GetoptError, err:
         # print help information and exit:
-        print(str(err)) # will print something like "option -a not recognized"
+        print str(err) # will print something like "option -a not recognized"
         usage()
         sys.exit(-2)
 
 
-    OutputFolder = ""
+    OutputFolder            = ""
     paths = []
     rawprogram_xml = None
     new_xml = None
@@ -190,20 +190,17 @@ def main():
             sys.exit()
         elif o in ("-t", "--location"):
             OutputFolder = a
-            print("outputFolder:"+OutputFolder)
             OutputFolder = re.sub(r"\\$","",OutputFolder)    # remove final slash if it exists
             OutputFolder = re.sub(r"/$","",OutputFolder)     # remove final slash if it exists
 
-            OutputFolder += "/"
-            print("outputFolder:" + OutputFolder)
-            # slashes will all be corrected below
-            print("platform:"+sys.platform)
+            OutputFolder += "/"     # slashes will all be corrected below
+
             if sys.platform.startswith("linux"):
                 OutputFolder = re.sub(r"\\","/",OutputFolder)   # correct slashes
             else:
                 OutputFolder = re.sub(r"/","\\\\",OutputFolder) # correct slashes
 
-            print("OutputFolder=",OutputFolder)
+            print "OutputFolder=",OutputFolder
             EnsureDirectoryExists(OutputFolder) # only need to call once
 
             output_path = OutputFolder
@@ -213,7 +210,7 @@ def main():
 #    import pdb; pdb.set_trace()
 
     if rawprogram_xml is None:
-        print("Input xml file must be specified!")
+        print "Input xml file must be specified!"
         usage()
         sys.exit(-3)
 
@@ -238,7 +235,7 @@ def main():
 
     for xml_element in xml_iter:
         if xml_element.tag == 'program' and xml_element.attrib['filename'] != '' and xml_element.attrib['label'] != 'sdcard' and xml_element.attrib['label'] != 'reserve4' and 'sparse' in xml_element.attrib and xml_element.attrib['sparse'].lower() == 'true':
-            print("\n\tFOUND: sparse file found", xml_element.attrib['filename'])
+            print "\n\tFOUND: sparse file found", xml_element.attrib['filename']
             del xml_element.attrib['sparse']
             # TODO: Deal with these attribs
             del xml_element.attrib['size_in_KB']
@@ -263,7 +260,7 @@ def main():
             rawprogram_xml_root_element.remove(xml_element)
         position = position + 1
     if num_sparse_files > 0:
-        print("\nFound",num_sparse_files,"files")
+        print "\nFound",num_sparse_files,"files"
         rough_string = "<?xml version=\"1.0\" ?>\n%s" % ET.tostring(rawprogram_xml_root.getroot())
         #reparsed = minidom.parseString(rough_string)
         #rough_string = reparsed.toprettyxml(indent="  ")
@@ -273,32 +270,32 @@ def main():
         #temp = re.sub("\s+$","",temp)
 
 
-        print("\nBacking up '%s' to '%s'" % (rawprogram_xml,os.path.basename(rawprogram_xml)+".bak"))
+        print "\nBacking up '%s' to '%s'" % (rawprogram_xml,os.path.basename(rawprogram_xml)+".bak")
         try:
             shutil.copyfile(rawprogram_xml,os.path.basename(rawprogram_xml)+".bak")
         except:
-            print("ERROR: Could not create backup")
+            print "ERROR: Could not create backup"
 
         try:
             opfile = open(new_xml, "w")
         except:
-            print("\nERROR: Unable to write to '%s'" % new_xml)
-            print("\nPlease use -o option to specify output filename")
-            print("\nEx.\n\tpython checksparse.py -i rawprogram0.xml -o rawprogramNEW.xml\n\n")
+            print "\nERROR: Unable to write to '%s'" % new_xml
+            print "\nPlease use -o option to specify output filename"
+            print "\nEx.\n\tpython checksparse.py -i rawprogram0.xml -o rawprogramNEW.xml\n\n"
             sys.exit()
         opfile.write( rough_string )
         opfile.close()
-        print("\nSUCCESS: Created \"%s\"" % new_xml)
+        print "\nSUCCESS: Created \"%s\"" % new_xml
 
         #rawprogram_xml_root.write(new_xml, encoding="us-ascii")
     else:
-        print("\nNo sparse images found\n")
-        print("NOTE: If you feel this is incorrect, and there *are* sparse images, this means")
-        print("the original partition.xml was *not* created correctly and did *not* indicate")
-        print("that any of the files were sparse! You can however manually edit '%s'" % rawprogram_xml)
-        print("to make sure all sparse files have sparse=\"true\", then re-run checksparse.py\n")
-        print("\nOr, modify the original partition.xml with all sparse files have sparse=\"true\"")
-        print("and start again with ptool.py - Hope this helps!\n")
+        print "\nNo sparse images found\n"
+        print "NOTE: If you feel this is incorrect, and there *are* sparse images, this means"
+        print "the original partition.xml was *not* created correctly and did *not* indicate"
+        print "that any of the files were sparse! You can however manually edit '%s'" % rawprogram_xml
+        print "to make sure all sparse files have sparse=\"true\", then re-run checksparse.py\n"
+        print "\nOr, modify the original partition.xml with all sparse files have sparse=\"true\""
+        print "and start again with ptool.py - Hope this helps!\n"
 
 
 def genfile(filename, current_start_sector, output_path):
@@ -330,11 +327,11 @@ def genfile(filename, current_start_sector, output_path):
     sparse_header['image_checksum'] = all_bytes[8]
 
     if sparse_header['magic'] != SPARSE_HEADER_MAGIC:
-        print("Bad magic ", sparse_header['magic'], " '%s' is probably not a sparse image\n" % filename)
+        print "Bad magic ", sparse_header['magic'], " '%s' is probably not a sparse image\n" % filename
         return -1
 
     if sparse_header['major_version'] != SPARSE_HEADER_MAJOR_VER:
-        print("Unknown major version number ", sparse_header['major_version'])
+        print "Unknown major version number ", sparse_header['major_version']
         return -1
 
     if sparse_header['file_hdr_sz'] > SPARSE_HEADER_LEN:
@@ -356,16 +353,16 @@ def genfile(filename, current_start_sector, output_path):
 
         if chunk_header['chunk_type'] == CHUNK_TYPE_RAW:
             if chunk_header['total_sz'] != (sparse_header['chunk_hdr_sz'] + (chunk_header['chunk_sz'] * sparse_header['blk_sz'])):
-                print("Bogus chunk size for chunk %d, type Raw" % i)
+                print "Bogus chunk size for chunk %d, type Raw" % i
                 return -1
-            temp = (1 * chunk_header['chunk_sz']) * sparse_header['blk_sz']
+            temp = (1L * chunk_header['chunk_sz']) * sparse_header['blk_sz']
             if temp % 512 == 0:
                 file_size_sectors = temp/512
             else:
-                print("File chunk size %d is not a sector-multiple" % temp)
+                print "File chunk size %d is not a sector-multiple" % temp
                 return -1
             if out_fp is None or out_fp.closed:
-                print("\tcreating %s" % os.path.join(output_path, "%s_%d%s" % (file_name, chunk_number, file_ext)))
+                print "\tcreating %s" % os.path.join(output_path, "%s_%d%s" % (file_name, chunk_number, file_ext))
                 try:
                     out_fp = open(os.path.join(output_path, "%s_%d%s" % (file_name, chunk_number, file_ext)), "wb")
                 except:
@@ -374,7 +371,7 @@ def genfile(filename, current_start_sector, output_path):
                 results.append({'filename': "%s_%d%s" % (file_name, chunk_number, file_ext), 'num_partition_sectors': str(file_size_sectors), 'start_sector': str(current_start_sector)})
                 chunk_number += 1
             else:
-                results[-1]['num_partition_sectors'] = str(int(results[-1]['num_partition_sectors']) + int(file_size_sectors))
+                results[-1]['num_partition_sectors'] = str(int(results[-1]['num_partition_sectors']) + file_size_sectors)
             process_raw_chunk(in_fp, out_fp, chunk_header['chunk_sz'], sparse_header['blk_sz'])
             current_start_sector += file_size_sectors
             total_blocks = total_blocks + chunk_header['chunk_sz']
@@ -382,19 +379,19 @@ def genfile(filename, current_start_sector, output_path):
             if (not out_fp is None) and not out_fp.closed:
                 out_fp.close()
             if chunk_header['total_sz'] != sparse_header['chunk_hdr_sz']:
-                print("Bogus chunk size for chunk %d, type Dont Care" % i)
+                print "Bogus chunk size for chunk %d, type Dont Care" % i
                 return -1
-            temp = (1 * chunk_header['chunk_sz']) * sparse_header['blk_sz']
+            temp = (1L * chunk_header['chunk_sz']) * sparse_header['blk_sz']
             if temp%512 == 0:
                 current_start_sector += (temp/512)
             else:
-                print("Number of bytes skipped %d is not a sector-multiple" % temp)
+                print "Number of bytes skipped %d is not a sector-multiple" % temp
                 return -1
             total_blocks = total_blocks + chunk_header['chunk_sz']
         else:
             if (not out_fp is None) and not out_fp.closed:
                 out_fp.close()
-            print("Unknown chunk type 0x%4.4x" % chunk_header['chunk_type'])
+            print "Unknown chunk type 0x%4.4x" % chunk_header['chunk_type']
             return -1
 
     in_fp.close()
@@ -402,29 +399,29 @@ def genfile(filename, current_start_sector, output_path):
         out_fp.close()
 
     if sparse_header['total_blks'] != total_blocks:
-        print("Wrote %d blocks, expected to write %d blocks\n" % (total_blocks, sparse_header['total_blks']))
+        print "Wrote %d blocks, expected to write %d blocks\n" % (total_blocks, sparse_header['total_blks'])
         return -1
     
     return results
 
 def find_file(filename, search_paths):
-    print("\n\n\tLooking for",filename)
-    print("\t"+"-"*40)
+    print "\n\n\tLooking for",filename
+    print "\t"+"-"*40
     for x in search_paths:
         #print "\tSearching ",x
         temp = os.path.join(x, filename)
-        print("\tSearching for **%s**" % temp)
+        print "\tSearching for **%s**" % temp
         if os.path.exists(temp):
-            print("\n\t**Found %s (%i bytes)" % (temp,os.path.getsize(temp)))
+            print "\n\t**Found %s (%i bytes)" % (temp,os.path.getsize(temp))
             return temp
 
     ## search cwd last
-    print("\tSearching ",os.getcwd())
+    print "\tSearching ",os.getcwd()
     if os.path.exists(filename):
-        print("\n\t**Found %s (%i bytes)" % (filename,os.path.getsize(filename)))
+        print "\n\t**Found %s (%i bytes)" % (filename,os.path.getsize(filename))
         return filename
 
-    print("\tCound't find file OR perhaps you don't have permission to run os.stat() on this file\n")
+    print "\tCound't find file OR perhaps you don't have permission to run os.stat() on this file\n"
     return None
 
 if __name__ == "__main__":
